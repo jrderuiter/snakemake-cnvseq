@@ -12,10 +12,13 @@ rule multiqc:
         'qc/multiqc_report.html'
     params:
         ''
+    log:
+        'logs/multiqc.log'
     run:
-        output_dir = path.dirname(output)
-
-        shell('multiqc {params} --force -o {output_dir} {input.directory}')
+        output_dir = path.dirname(output[0])
+        output_name = path.basename(output[0])
+        shell('multiqc {params} --force -o {output_dir}'
+              ' -n {output_name} {input.directory} &> {log}')
 
 
 rule fastqc:
