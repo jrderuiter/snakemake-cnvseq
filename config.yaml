@@ -1,0 +1,36 @@
+cutadapt:
+  # Parameter --length is required to trim reads to the read length
+  # expected by the used qdnaseq reference. Can be omitted if reads
+  # are already of the expected length.
+  extra: >-
+    --length 50
+    -a AGATCGGAAGAGCACACGTCTGAACTCCAGTCAC
+    --minimum-length 30
+
+bwa_aln:
+  index: '/path/to/index'
+  extra: ''
+  threads: 8
+
+bwa_samse:
+  index: '/path/to/index'
+  extra: "-r \"@RG\\tID:{sample}.{lane}\\tSM:{sample}\\t\
+          PU:{sample}.{lane}\\tPL:ILLUMINA\\tCN:CENTRE\""
+  sort_extra: '-XX:ParallelGCThreads=5'
+
+picard_merge_bam:
+  extra: '-XX:ParallelGCThreads=5'
+
+picard_mark_duplicates:
+  extra: '-XX:ParallelGCThreads=5'
+
+multiqc:
+  extra: ''
+
+fastqc:
+  extra: ''
+
+qdnaseq:
+  bin_size: 50
+  read_length: 50
+  extra: ''
