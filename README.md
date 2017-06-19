@@ -1,7 +1,7 @@
 # Snakemake workflow: cnvseq-qdnaseq
 
 [![Snakemake](https://img.shields.io/badge/snakemake-≥3.12.0-brightgreen.svg)](https://snakemake.bitbucket.io)
-[![Build Status](https://travis-ci.org/snakemake-workflows/cnvseq-qdnaseq.svg?branch=master)](https://travis-ci.org/snakemake-workflows/cnvseq-qdnaseq)
+[![wercker status](https://app.wercker.com/status/ace261cedf02ae669a31189a1363e61d/s/master "wercker status")](https://app.wercker.com/project/byKey/ace261cedf02ae669a31189a1363e61d)
 
 This is a Snakemake workflow for generating CNV profiles/calls from CNV-seq
 (shallow WGS) sequencing data using QDNAseq. The workflow is designed to handle
