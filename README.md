@@ -41,8 +41,9 @@ its DOI (see above).
 ### Step 2: Install dependencies
 
 To be able to run the workflow, you need to have snakemake and pandas
-installed. The various tools (e.g. bwa, samtools) also need to be installed
-or can be managed via snakemake using conda (with the --use-conda flag).
+installed. The various tools (e.g. bwa, samtools, R + QDNAseq) also need to
+be installed or can be managed via snakemake using conda (with the
+--use-conda flag).
 
 ### Step 3: Configure workflow
 
