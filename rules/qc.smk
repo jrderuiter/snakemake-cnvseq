@@ -14,11 +14,8 @@ rule multiqc:
         ''
     log:
         'logs/multiqc.log'
-    run:
-        output_dir = path.dirname(output[0])
-        output_name = path.basename(output[0])
-        shell('multiqc {params} --force -o {output_dir}'
-              ' -n {output_name} {input.directory} &> {log}')
+    wrapper:
+        'file://' + path.join(workflow.basedir, 'wrappers/multiqc')
 
 
 rule fastqc:
@@ -38,5 +35,5 @@ rule samtools_stats:
         'bam/deduped/{sample}.bam'
     output:
         'qc/samtools_stats/{sample}.txt'
-    shell:
-        'samtools stats {input} > {output}'
+    wrapper:
+        'file://' + path.join(workflow.basedir, 'wrappers/samtools/stats')

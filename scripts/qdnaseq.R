@@ -1,144 +1,150 @@
-#!/usr/bin/env Rscript
-
-suppressPackageStartupMessages({
-  require(docopt)
-  require(methods)
-})
-
-"
-Usage:
-    qdnaseq.R [options] <bam_paths>...
-
-Description: Wrapper script for running QDNAseq.
-
-Options:
-    --out_dir=<path>              Output directory.
-    --bin_size=<int>              Bin size for generating counts. [Default: 50]
-    --read_length=<int>           Read length of input data. [Default: 50]
-    --genome=<str>                Genome to use. [Default: mm10]
-    --organism=<str>              Organism from which data is derived. [Default: Other]
-    --blacklists=<path,path...>   BED files describing blacklisted regions.
-    --spleens=<str,str...>        Samples to use for spleen correction.
-
-" -> doc
-
-# Retrieve the command-line arguments
-opts <- docopt(doc)
-
-# Load remaining libraries. Note that these libraries are not imported until
-# after the docopt call to increase the responsiveness of the argument parsing.
 suppressMessages({
-  library(matrixStats)  # quick fix for missing colMedians import
-  library(QDNAseq)
-  library(QDNAseq.mm10)
-  library(CGHcall)
+    library(matrixStats)  # quick fix for missing colMedians import
+    library(QDNAseq)
+    library(QDNAseq.mm10)
+    library(CGHcall)
 })
 
-# -------------------------- Helper functions ----------------------------------
+# Redirect output to log file.
+if (!is.null(snakemake@log)) {
+    log_file = con <- file(snakemake@log[[1]])
+    sink(log_file)
+    sink(log_file, type="message")
+}
 
+
+################################################################################
+# Functions                                                                    #
+################################################################################
 
 setGeneric("normalizeBinsBySpleens",
-  function(object, spleens, method="median", force=FALSE)
-  standardGeneric("normalizeBinsBySpleens"))
+    function(object, spleens, method="median", force=FALSE)
+    standardGeneric("normalizeBinsBySpleens"))
 
 
-setMethod("normalizeBinsBySpleens", signature=c(object="QDNAseqCopyNumbers"),
-          definition=function(object, spleens,
-                              method=c("median", "mean", "mode"),
-                              force=FALSE) {
+setMethod("normalizeBinsBySpleens",
+            signature=c(object="QDNAseqCopyNumbers"),
+            definition=function(object, spleens,
+                                method=c("median", "mean", "mode"),
+                                force=FALSE) {
 
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  # Validate arguments
-  # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  # Argument "object":
-  if (!force && ("segmented" %in% assayDataElementNames(object)))
-    stop("Data has already been segmented. Re-normalizing will ",
-          "remove segmentation (and possible calling) results. ",
-          "Please specify force=TRUE, if you want this.")
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    # Validate arguments
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    # Argument "object":
+    if (!force && ("segmented" %in% assayDataElementNames(object)))
+        stop("Data has already been segmented. Re-normalizing will ",
+            "remove segmentation (and possible calling) results. ",
+            "Please specify force=TRUE, if you want this.")
 
-  # Argument "method":
-  method <- match.arg(method);
+    # Argument "method":
+    method <- match.arg(method);
 
-  if ("segmented" %in% assayDataElementNames(object))
-    assayDataElement(object, "segmented") <- NULL
-  if ("calls" %in% assayDataElementNames(object)) {
-    assayDataElement(object, "calls") <- NULL
-    assayDataElement(object, "probloss") <- NULL
-    assayDataElement(object, "probnorm") <- NULL
-    assayDataElement(object, "probgain") <- NULL
-    if ("probdloss" %in% assayDataElementNames(object))
-      assayDataElement(object, "probdloss") <- NULL
-    if ("probamp" %in% assayDataElementNames(object))
-      assayDataElement(object, "probamp") <- NULL
-  }
+    if ("segmented" %in% assayDataElementNames(object))
+        assayDataElement(object, "segmented") <- NULL
 
-  # Extract corrected counts
-  copynumber <- assayDataElement(object, "copynumber")
+    if ("calls" %in% assayDataElementNames(object)) {
+        assayDataElement(object, "calls") <- NULL
+        assayDataElement(object, "probloss") <- NULL
+        assayDataElement(object, "probnorm") <- NULL
+        assayDataElement(object, "probgain") <- NULL
+        if ("probdloss" %in% assayDataElementNames(object))
+            assayDataElement(object, "probdloss") <- NULL
+        if ("probamp" %in% assayDataElementNames(object))
+            assayDataElement(object, "probamp") <- NULL
+    }
 
-  # Extract annotation data
-  fData <- fData(object)
+    # Extract corrected counts
+    copynumber <- assayDataElement(object, "copynumber")
 
-  # Sanity check
-  stopifnot(is.matrix(copynumber))
+    # Extract annotation data
+    fData <- fData(object)
 
-  # Filter
-  # condition <- QDNAseq:::binsToUse(object)
+    # Sanity check
+    stopifnot(is.matrix(copynumber))
 
-  cn_spleens = copynumber[, spleens]
+    cn_spleens = copynumber[, spleens]
 
-  QDNAseq:::vmsg("Applying ", method, " normalization (spleens)...",
-                  appendLF=FALSE)
-  if (method == "mean") {
-    values <- rowMeans(cn_spleens, na.rm=TRUE)
-  } else if (method == "median") {
-    values <- rowMedians(cn_spleens, na.rm=TRUE)
-  } else if (method == "mode") {
-    values <- apply(cn_spleens, MARGIN=1L,
-      FUN=function(x) {
-        d <- density(x, na.rm=TRUE); d$x[which.max(d$y)]
-      })
-  }
+    QDNAseq:::vmsg("Applying ", method, " normalization (spleens)...",
+                    appendLF=FALSE)
+    if (method == "mean") {
+        values <- rowMeans(cn_spleens, na.rm=TRUE)
+    } else if (method == "median") {
+        values <- rowMedians(cn_spleens, na.rm=TRUE)
+    } else if (method == "mode") {
+        values <- apply(cn_spleens, MARGIN=1L,
+            FUN=function(x) {
+                d <- density(x, na.rm=TRUE); d$x[which.max(d$y)]
+            }
+        )
+    }
 
-  # Replace zeroes (for division).
-  values[values == 0] <- 1
+    # Replace zeroes (for division).
+    values[values == 0] <- 1
 
-  copynumber2 <- t(scale(t(copynumber), center=FALSE, scale=values))
+    copynumber2 <- t(scale(t(copynumber), center=FALSE, scale=values))
 
-  # Assign
-  assayDataElement(object, "copynumber") <- copynumber2
+    # Assign
+    assayDataElement(object, "copynumber") <- copynumber2
 
-  # Not needed anymore
-  copynumber2 <- NULL
+    # Not needed anymore
+    copynumber2 <- NULL
 
-  object
+    object
 })
 
-# ----------------------------- Main script ------------------------------------
 
-# Get bin annotations.
-binsize <- as.integer(opts$bin_size)
-bins <- getBinAnnotations(binSize=binsize, genome=opts$genome)
+probability_matrix <- function(cgh) {
+    probs = matrix(0, dim(cgh)[1], dim(cgh)[2])
+    colnames(probs) = colnames(cgh)
+    rownames(probs) = rownames(cgh)
+
+    for (i in 1:dim(cgh)[1]){
+        for (j in 1:dim(cgh)[2]){
+            if (calls(cgh)[i,j] == 2){
+                probs[i,j] = probamp(cgh)[i,j]
+            } else if (calls(cgh)[i,j] == 1){
+                probs[i,j] = probgain(cgh)[i,j]
+            } else if (calls(cgh)[i,j] == -1){
+                probs[i,j] = probloss(cgh)[i,j]
+            } else if (calls(cgh)[i,j] == -2){
+                probs[i,j] = probdloss(cgh)[i,j]
+            }
+        }
+    }
+
+    probs
+}
+
+
+################################################################################
+# Script                                                                       #
+################################################################################
+
+bins <- getBinAnnotations(
+    binSize=as.integer(snakemake@params$bin_size),
+    genome=snakemake@params$genome)
 
 # Use external blacklists if given.
-if (!is.null(opts$blacklists)) {
-  blacklists = strsplit(opts$blacklists, ',')[[1]]
-  bins$blacklist = calculateBlacklist(bins@data, blacklists)
+if (!is.null(snakemake@params$blacklists)) {
+    bins$blacklist <- calculateBlacklist(
+        bins@data, snakemake@params$blacklists)
 }
 
 # Perform analysis
-readCounts <- binReadCounts(bins, bamfiles=opts$bam_paths)
+readCounts <- binReadCounts(bins, bamfiles=as.character(snakemake@input))
 
 readCountsFiltered <- applyFilters(
-  readCounts, residual=TRUE, blacklist=TRUE, mappability=20, chromosomes="Y")
+    readCounts, residual=TRUE, blacklist=TRUE,
+    mappability=20, chromosomes="Y")
 readCountsFiltered <- estimateCorrection(readCountsFiltered)
 
 copyNumbers <- correctBins(readCountsFiltered)
 copyNumbersNormalized <- normalizeBins(copyNumbers)
 
-if (!is.null(opts$spleens)) {
-  spleens = strsplit(opts$spleens, ',')[[1]]
-  copyNumbersNormalized = normalizeBinsBySpleens(
-    copyNumbersNormalized, spleens=spleens)
+if (!is.null(snakemake@params$spleens)) {
+    copyNumbersNormalized = normalizeBinsBySpleens(
+        copyNumbersNormalized, spleens=snakemake@params$spleens)
 }
 
 copyNumbersSmooth <- smoothOutlierBins(copyNumbersNormalized)
@@ -147,67 +153,48 @@ copyNumbersSmooth <- smoothOutlierBins(copyNumbersNormalized)
 copyNumbersSegmented <- segmentBins(copyNumbersSmooth)
 copyNumbersSegmented <- normalizeSegmentedBins(copyNumbersSegmented)
 
-copyNumbersCalled <- callBins(copyNumbersSegmented, organism=opts$organism)
+copyNumbersCalled <- callBins(
+    copyNumbersSegmented, organism=snakemake@params$organism)
 cgh <- makeCgh(copyNumbersCalled)
 
-# Create probability matrix.
-probs = matrix(0, dim(cgh)[1], dim(cgh)[2])
-colnames(probs) = colnames(cgh)
-rownames(probs) = rownames(cgh)
-
-for (i in 1:dim(cgh)[1]){
-  for (j in 1:dim(cgh)[2]){
-    if (calls(cgh)[i,j] == 2){
-      probs[i,j] = probamp(cgh)[i,j]
-    } else if (calls(cgh)[i,j] == 1){
-      probs[i,j] = probgain(cgh)[i,j]
-    } else if (calls(cgh)[i,j] == -1){
-      probs[i,j] = probloss(cgh)[i,j]
-    } else if (calls(cgh)[i,j] == -2){
-      probs[i,j] = probdloss(cgh)[i,j]
-      }
-  }
+# Save results.
+if (!is.null(snakemake@output$rds)) {
+    saveRDS(cgh, snakemake@output$rds)
 }
 
-# Define/create output directories.
-calls_dir = file.path(opts$out_dir)
-object_dir = file.path(opts$out_dir, 'images')
-plots_dir = file.path(opts$out_dir, 'plots')
+if (!is.null(snakemake@output$logratios)) {
+    write.table(copynumber(cgh), snakemake@output$logratios,
+                sep='\t', quote=FALSE, col.names=NA)
+}
 
-if (!dir.exists(object_dir)) { dir.create(object_dir, recursive=T) }
-if (!dir.exists(calls_dir)) { dir.create(calls_dir, recursive=T) }
-if (!dir.exists(plots_dir)) { dir.create(plots_dir, recursive=T) }
+if (!is.null(snakemake@output$segments)) {
+    write.table(segmented(cgh), snakemake@output$segments,
+                sep='\t', quote=FALSE, col.names=NA)
+}
 
-# Dump images.
-image_path = file.path(object_dir, 'image.rdata')
-save.image(image_path)
 
-cgh_obj_path = file.path(object_dir, 'cgh.rds')
-saveRDS(cgh, cgh_obj_path)
+if (!is.null(snakemake@output$calls)) {
+    write.table(calls(cgh), snakemake@output$calls,
+                sep='\t', quote=FALSE, col.names=NA)
+}
 
-# Save results.
-probs_path = file.path(calls_dir, 'probs.txt')
-write.table(probs, probs_path, sep='\t',
-            quote=FALSE, col.names=NA)
-
-calls_path = file.path(calls_dir, 'calls.txt')
-write.table(calls(cgh), calls_path, sep='\t',
-            quote=FALSE, col.names=NA)
-
-segments_path = file.path(calls_dir, 'segments.txt')
-write.table(segmented(cgh), segments_path, sep='\t',
-            quote=FALSE, col.names=NA)
-
-cgh_path = file.path(calls_dir, 'logratios.txt')
-write.table(copynumber(cgh), cgh_path, sep='\t',
-            quote=FALSE, col.names=NA)
+if (!is.null(snakemake@output$probs)) {
+    write.table(probability_matrix(cgh), snakemake@output$probs,
+                sep='\t', quote=FALSE, col.names=NA)
+}
 
 # Create call plots (pdf).
-for (i in 1:length(colnames(copyNumbersCalled))){
-  name = colnames(copyNumbersCalled)[i]
-  pdf_path = file.path(plots_dir, paste0(name, '.pdf'))
+if (!is.null(snakemake@output$plots)) {
+    if (!dir.exists(snakemake@output$plots)) {
+        dir.create(snakemake@output$plots, recursive=T)
+    }
 
-  pdf(pdf_path, width=21, height=8)
-  plot(copyNumbersCalled[, i])
-  dev.off()
+    for (i in 1:length(colnames(copyNumbersCalled))) {
+        name = colnames(copyNumbersCalled)[i]
+        pdf_path = file.path(snakemake@output$plots, paste0(name, '.pdf'))
+
+        pdf(pdf_path, width=21, height=8)
+        plot(copyNumbersCalled[, i])
+        dev.off()
+    }
 }
