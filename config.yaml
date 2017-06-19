@@ -19,10 +19,14 @@ bwa_samse:
   sort_extra: '-XX:ParallelGCThreads=5'
 
 picard_merge_bam:
-  extra: '-XX:ParallelGCThreads=5'
+  extra: >-
+    -XX:ParallelGCThreads=5
+    VALIDATION_STRINGENCY=LENIENT
 
 picard_mark_duplicates:
-  extra: '-XX:ParallelGCThreads=5'
+  extra: >-
+    -XX:ParallelGCThreads=5
+    VALIDATION_STRINGENCY=LENIENT
 
 multiqc:
   extra: ''

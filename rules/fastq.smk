@@ -26,7 +26,7 @@ def fastq_input(wildcards):
     return input_
 
 
-rule copy_fastq:
+rule copy_input:
     input:
         fastq_input
     output:
