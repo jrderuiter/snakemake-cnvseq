@@ -33,6 +33,8 @@ rule copy_input:
         temp('fastq/input/{sample}.{lane}.{pair}.fastq.gz')
     shell:
         'cp {input} {output}'
+    resources:
+        io=1
 
 
 rule cutadapt:
