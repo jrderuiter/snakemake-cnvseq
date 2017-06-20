@@ -5,7 +5,7 @@ rule bwa_aln:
     input:
         "fastq/trimmed/{sample}.{lane}.{pair}.fastq.gz"
     output:
-        "bam/aligned/{sample}.{lane}.{pair}.sai"
+        temp("bam/aligned/{sample}.{lane}.{pair}.sai")
     params:
         index=config['bwa_aln']['index'],
         extra=config['bwa_aln']['extra']
@@ -22,7 +22,7 @@ rule bwa_samse:
         fastq="fastq/trimmed/{sample}.{lane}.R1.fastq.gz",
         sai="bam/aligned/{sample}.{lane}.R1.sai"
     output:
-        "bam/aligned/{sample}.{lane}.bam"
+        temp("bam/aligned/{sample}.{lane}.bam")
     params:
         index=config['bwa_samse']['index'],
         extra=config['bwa_samse']['extra'],
@@ -49,7 +49,7 @@ rule picard_merge_bam:
     input:
         merge_inputs
     output:
-        'bam/merged/{sample}.bam'
+        temp('bam/merged/{sample}.bam')
     params:
         config['picard_merge_bam']['extra']
     log:
@@ -63,7 +63,7 @@ rule picard_mark_duplicates:
         'bam/merged/{sample}.bam'
     output:
         bam='bam/deduped/{sample}.bam',
-        metrics='bam/deduped/{sample}.metrics'
+        metrics='qc/picard_mark_duplicates/{sample}.metrics'
     params:
         config['picard_mark_duplicates']['extra']
     log:

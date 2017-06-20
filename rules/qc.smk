@@ -7,7 +7,9 @@ rule multiqc:
         fastqc=expand('qc/fastqc/{sample_lane}.{pair}_fastqc.html',
                       sample_lane=get_samples_with_lane(), pair=['R1']),
         samtools_stats=expand('qc/samtools_stats/{sample}.txt',
-                              sample=get_samples())
+                              sample=get_samples()),
+        mark_duplicates=expand('qc/picard_mark_duplicates/{sample}.metrics',
+                               sample=get_samples())
     output:
         'qc/multiqc_report.html'
     params:

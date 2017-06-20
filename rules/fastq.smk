@@ -39,7 +39,7 @@ rule cutadapt:
     input:
         'fastq/input/{sample}.{lane}.R1.fastq.gz'
     output:
-        fastq='fastq/trimmed/{sample}.{lane}.R1.fastq.gz',
+        fastq=temp('fastq/trimmed/{sample}.{lane}.R1.fastq.gz'),
         qc='qc/cutadapt/{sample}.{lane}.qc.txt'
     params:
         config['cutadapt']['extra']
