@@ -17,14 +17,14 @@ if (!is.null(snakemake@log)) {
 # Functions                                                                    #
 ################################################################################
 
-setGeneric("normalizeBinsBySpleens",
-    function(object, spleens, method="median", force=FALSE)
-    standardGeneric("normalizeBinsBySpleens"))
+setGeneric("normalizeBinsByNormals",
+    function(object, normals, method="median", force=FALSE)
+    standardGeneric("normalizeBinsByNormals"))
 
 
-setMethod("normalizeBinsBySpleens",
+setMethod("normalizeBinsByNormals",
             signature=c(object="QDNAseqCopyNumbers"),
-            definition=function(object, spleens,
+            definition=function(object, normals,
                                 method=c("median", "mean", "mode"),
                                 force=FALSE) {
 
@@ -63,16 +63,16 @@ setMethod("normalizeBinsBySpleens",
     # Sanity check
     stopifnot(is.matrix(copynumber))
 
-    cn_spleens = copynumber[, spleens]
+    cn_normals = copynumber[, normals]
 
-    QDNAseq:::vmsg("Applying ", method, " normalization (spleens)...",
+    QDNAseq:::vmsg("Applying ", method, " normalization (normals)...",
                     appendLF=FALSE)
     if (method == "mean") {
-        values <- rowMeans(cn_spleens, na.rm=TRUE)
+        values <- rowMeans(cn_normals, na.rm=TRUE)
     } else if (method == "median") {
-        values <- rowMedians(cn_spleens, na.rm=TRUE)
+        values <- rowMedians(cn_normals, na.rm=TRUE)
     } else if (method == "mode") {
-        values <- apply(cn_spleens, MARGIN=1L,
+        values <- apply(cn_normals, MARGIN=1L,
             FUN=function(x) {
                 d <- density(x, na.rm=TRUE); d$x[which.max(d$y)]
             }
@@ -142,9 +142,9 @@ readCountsFiltered <- estimateCorrection(readCountsFiltered)
 copyNumbers <- correctBins(readCountsFiltered)
 copyNumbersNormalized <- normalizeBins(copyNumbers)
 
-if (!is.null(snakemake@params$spleens)) {
-    copyNumbersNormalized = normalizeBinsBySpleens(
-        copyNumbersNormalized, spleens=snakemake@params$spleens)
+if (!is.null(snakemake@params$normals)) {
+    copyNumbersNormalized = normalizeBinsByNormals(
+        copyNumbersNormalized, normals=snakemake@params$normals)
 }
 
 copyNumbersSmooth <- smoothOutlierBins(copyNumbersNormalized)

@@ -17,7 +17,7 @@ rule qdnaseq:
         bin_size=config["qdnaseq"]["bin_size"],
         read_length=config["qdnaseq"]["read_length"],
         blacklists=config["qdnaseq"]["blacklists"],
-        spleens=get_spleen_samples()
+        normals=get_normal_samples()
     conda:
         path.join(workflow.basedir, "envs/qdnaseq.yaml")
     log:
