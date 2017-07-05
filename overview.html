@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Snakemake-cnvseq-qdnaseq &mdash; snakemake-cnvseq-qdnaseq 0.1.0 documentation</title>
+  <title>Overview &mdash; snakemake-cnvseq-qdnaseq 0.1.0 documentation</title>
   
 
   
@@ -37,8 +37,9 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="snakemake-cnvseq-qdnaseq 0.1.0 documentation" href="#"/>
-        <link rel="next" title="Overview" href="overview.html"/> 
+    <link rel="top" title="snakemake-cnvseq-qdnaseq 0.1.0 documentation" href="index.html"/>
+        <link rel="next" title="Installation" href="installation.html"/>
+        <link rel="prev" title="Snakemake-cnvseq-qdnaseq" href="index.html"/> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
@@ -57,7 +58,7 @@
           
 
           
-            <a href="#" class="icon icon-home"> snakemake-cnvseq-qdnaseq
+            <a href="index.html" class="icon icon-home"> snakemake-cnvseq-qdnaseq
           
 
           
@@ -91,8 +92,8 @@
               
             
             
-              <ul>
-<li class="toctree-l1"><a class="reference internal" href="overview.html">Overview</a></li>
+              <ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Overview</a></li>
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="configuration.html">Configuration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
@@ -113,7 +114,7 @@
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
         
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="#">snakemake-cnvseq-qdnaseq</a>
+          <a href="index.html">snakemake-cnvseq-qdnaseq</a>
         
       </nav>
 
@@ -141,15 +142,15 @@
 
   <ul class="wy-breadcrumbs">
     
-      <li><a href="#">Docs</a> &raquo;</li>
+      <li><a href="index.html">Docs</a> &raquo;</li>
         
-      <li>Snakemake-cnvseq-qdnaseq</li>
+      <li>Overview</li>
     
     
       <li class="wy-breadcrumbs-aside">
         
             
-            <a href="_sources/index.rst.txt" rel="nofollow"> View page source</a>
+            <a href="_sources/overview.rst.txt" rel="nofollow"> View page source</a>
           
         
       </li>
@@ -162,19 +163,34 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="snakemake-cnvseq-qdnaseq">
-<h1>Snakemake-cnvseq-qdnaseq<a class="headerlink" href="#snakemake-cnvseq-qdnaseq" title="Permalink to this headline">¶</a></h1>
-<p><a class="reference external" href="https://snakemake.bitbucket.io"><img alt="Snakemake" src="https://img.shields.io/badge/snakemake-≥3.13.3-brightgreen.svg" /></a> <a class="reference external" href="https://app.wercker.com/project/byKey/ace261cedf02ae669a31189a1363e61d"><img alt="Wercker" src="https://app.wercker.com/status/ace261cedf02ae669a31189a1363e61d/s/develop" /></a></p>
-<p>Snakemake-cnvseq-qdnaseq is a snakemake workflow that generates copy number
-profiles/calls from CNV-seq (shallow whole genome sequencing) data. The
-workflow is designed to handle single-end and (optionally) multi-lane sequencing
-data. The actual copy number profiles and calls are generated using the
-QDNAseq R package.</p>
-<p>If you use this workflow in a paper, don’t forget to give credits
-to the authors by citing the URL of this repository and, if available, its
-DOI (see above).</p>
-<div class="toctree-wrapper compound">
-</div>
+  <div class="section" id="overview">
+<h1>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h1>
+<p>The workflow essentially performs the following steps:</p>
+<ul class="simple">
+<li>The input reads are trimmed to remove adapters and/or poor quality base
+calls using cutadapt.</li>
+<li>The trimmed reads are aligned to the reference genome using bwa aln.
+(Bwa aln is used because we typically have data with short read lengths.
+Bwa mem support can be added on request.)</li>
+<li>The alignments are sorted and indexed using samtools.</li>
+<li>Bam files from multiple lanes are merged using samtools.</li>
+<li>Picard MarkDuplicates is used to remove optical/PCR duplicates.</li>
+<li>The final alignments are indexed using samtools index.</li>
+<li>QDNAseq is used to generate copy number profiles/calls from the alignments.
+This step also supports normalization using normal samples and
+blacklisting of specific genomic regions.</li>
+</ul>
+<p>QC statistics are generated using fastqc, samtools stats and picard
+MarkDuplicates. The stats are summarized into a single report using multiqc.</p>
+<p>Altogether, this results in the following dependency graph:</p>
+<div class="figure align-center">
+<img alt="_images/dag.svg" src="_images/dag.svg" /></div>
+<p>Note that the QDNAseq step should be configured carefully to reflect the used
+genome and read length. Make sure that a bin annotation is available for your
+reference genome and read length, otherwise you may need to generate one.
+(See the <a class="reference external" href="https://bioconductor.org/packages/release/bioc/vignettes/QDNAseq/inst/doc/QDNAseq.pdf">QDNAseq documentation</a> for more details.) Alternatively, if no
+bin annotation is available for your specific read length, you can also trim
+your reads to a supported length in the <code class="docutils literal"><span class="pre">cutadapt</span></code> step.</p>
 </div>
 
 
@@ -187,8 +203,10 @@ DOI (see above).</p>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="overview.html" class="btn btn-neutral float-right" title="Overview" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="installation.html" class="btn btn-neutral float-right" title="Installation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
+      
+        <a href="index.html" class="btn btn-neutral" title="Snakemake-cnvseq-qdnaseq" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
