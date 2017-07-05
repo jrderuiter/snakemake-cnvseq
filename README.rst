@@ -15,8 +15,8 @@ authors by citing the URL of this repository and its DOI (see above).
 .. |Snakemake| image:: https://img.shields.io/badge/snakemake-≥3.13.3-brightgreen.svg
    :target: https://snakemake.bitbucket.io
 
-.. |Wercker| image:: https://app.wercker.com/status/ace261cedf02ae669a31189a1363e61d/s/develop
-   :target: https://app.wercker.com/project/byKey/ace261cedf02ae669a31189a1363e61d
+.. |Wercker| image:: https://app.wercker.com/status/80c1d2ac76184bf8f2a19f959f42f9a8/s/develop
+   :target: https://app.wercker.com/project/byKey/80c1d2ac76184bf8f2a19f959f42f9a8
 
 Overview
 --------
