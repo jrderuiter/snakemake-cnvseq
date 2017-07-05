@@ -1,3 +1,21 @@
+################################################################################
+# Input configuration                                                          #
+################################################################################
+
+input:
+  # Optional: input directory to use for fastq files (for local input files).
+  dir: 'input'
+
+  # Optional: configuration to use for remote (FTP) input files.
+  # ftp:
+  #   username: 'user'
+  #   password: 'pass'
+
+
+################################################################################
+# Rule configuration                                                           #
+################################################################################
+
 cutadapt:
   # Parameter --length is required to trim reads to the read length
   # expected by the used qdnaseq reference. Can be omitted if reads
@@ -10,18 +28,18 @@ cutadapt:
 bwa_aln:
   index: '/path/to/index'
   extra: ''
-  threads: 8
+  threads: 10
 
 bwa_samse:
   index: '/path/to/index'
-  extra: "-r \"@RG\\tID:{sample}.{lane}\\tSM:{sample}\\t\
+  # Note that MarkDuplicates requires the LB tag to be set.
+  extra: "-r \"@RG\\tID:{sample}.{lane}\\tSM:{sample}\\tLB:{sample}\\t\
           PU:{sample}.{lane}\\tPL:ILLUMINA\\tCN:CENTRE\""
-  sort_extra: '-XX:ParallelGCThreads=5'
+  sort_extra: ''
 
-picard_merge_bam:
-  extra: >-
-    -XX:ParallelGCThreads=5
-    VALIDATION_STRINGENCY=LENIENT
+samtools_merge:
+  extra: ''
+  threads: 10
 
 picard_mark_duplicates:
   extra: >-
@@ -35,6 +53,9 @@ fastqc:
   extra: ''
 
 qdnaseq:
+  genome: 'mm10'
+  organism: 'other'
   bin_size: 50
   read_length: 50
-  extra: ''
+  blacklists:
+    - 'custom.bed'

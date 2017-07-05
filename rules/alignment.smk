@@ -7,15 +7,15 @@ rule bwa_aln:
     output:
         temp("bam/aligned/{sample}.{lane}.{pair}.sai")
     params:
-        index=config['bwa_aln']['index'],
-        extra=config['bwa_aln']['extra']
+        index=config["bwa_aln"]["index"],
+        extra=config["bwa_aln"]["extra"]
     log:
         "logs/bwa_aln/{sample}.{lane}.{pair}.log"
     threads:
-        config['bwa_aln']['threads']
+        config["bwa_aln"]["threads"]
     wrapper:
-        'file://' + path.join(workflow.basedir, 'wrappers/bwa/aln')
-        #"master/bio/bwa/aln"
+        "0.17.0/bio/bwa/aln"
+
 
 rule bwa_samse:
     input:
@@ -24,58 +24,57 @@ rule bwa_samse:
     output:
         temp("bam/aligned/{sample}.{lane}.bam")
     params:
-        index=config['bwa_samse']['index'],
-        extra=config['bwa_samse']['extra'],
+        index=config["bwa_samse"]["index"],
+        extra=config["bwa_samse"]["extra"],
         sort="samtools",
         sort_order="coordinate",
-        sort_extra=config['bwa_samse']['sort_extra']
+        sort_extra=config["bwa_samse"]["sort_extra"]
     log:
         "logs/bwa_samse/{sample}.{lane}.log"
     wrapper:
-        'file://' + path.join(workflow.basedir, 'wrappers/bwa/samse')
-        #"master/bio/bwa/aln"
+        "0.17.0/bio/bwa/samse"
 
 
 def merge_inputs(wildcards):
     lanes = get_sample_lanes(wildcards.sample)
 
-    file_paths = ['bam/aligned/{}.{}.bam'.format(wildcards.sample, lane)
+    file_paths = ["bam/aligned/{}.{}.bam".format(wildcards.sample, lane)
                   for lane in lanes]
 
     return file_paths
 
 
-rule picard_merge_bam:
+rule samtools_merge:
     input:
         merge_inputs
     output:
-        temp('bam/merged/{sample}.bam')
+        temp("bam/merged/{sample}.bam")
     params:
-        config['picard_merge_bam']['extra']
-    log:
-        'logs/picard_merge_bam/{sample}.log'
+        config["samtools_merge"]["extra"]
+    threads:
+        config["samtools_merge"]["threads"]
     wrapper:
-        'file://' + path.join(workflow.basedir, 'wrappers/picard/mergesamfiles')
+        "0.17.0/bio/samtools/merge"
 
 
 rule picard_mark_duplicates:
     input:
-        'bam/merged/{sample}.bam'
+        "bam/merged/{sample}.bam"
     output:
-        bam='bam/deduped/{sample}.bam',
-        metrics='qc/picard_mark_duplicates/{sample}.metrics'
+        bam="bam/final/{sample}.bam",
+        metrics="qc/picard_mark_duplicates/{sample}.metrics"
     params:
-        config['picard_mark_duplicates']['extra']
+        config["picard_mark_duplicates"]["extra"]
     log:
-        'logs/picard_mark_duplicates/{sample}.log'
+        "logs/picard_mark_duplicates/{sample}.log"
     wrapper:
-        '0.15.4/bio/picard/markduplicates'
+        "0.17.0/bio/picard/markduplicates"
 
 
 rule samtools_index:
     input:
-        'bam/deduped/{sample}.bam'
+        "bam/final/{sample}.bam"
     output:
-        'bam/deduped/{sample}.bam.bai'
+        "bam/final/{sample}.bam.bai"
     wrapper:
-        "0.15.4/bio/samtools/index"
+        "0.17.0/bio/samtools/index"

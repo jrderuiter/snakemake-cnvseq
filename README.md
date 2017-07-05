@@ -78,7 +78,7 @@ or
 
 The workflow can be executed in a different directory using
 
-    snakemake --directory ~/scratch/exome
+    snakemake --directory ~/scratch
 
 Note that this directory should contain the appropriate sample and config files.
 
