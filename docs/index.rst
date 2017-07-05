@@ -1,5 +1,5 @@
-Snakemake-cnvseq-qdnaseq
-========================
+Snakemake-cnvseq
+================
 
 |Snakemake| |Wercker|
 
