@@ -1,5 +1,5 @@
-Snakemake-exome
-===============
+Snakemake-cnvseq-qdnaseq
+========================
 
 |Snakemake| |Wercker|
 
@@ -55,11 +55,9 @@ your reads to a supported length in the ``cutadapt`` step.
 Documentation
 -------------
 
-Documentation is available at `jrderuiter.github.io/snakemake-cnvseq-qdnaseq`_.
+Documentation is available at http://jrderuiter.github.io/snakemake-cnvseq-qdnaseq
 
 License
 -------
 
 This software is released under the MIT license.
-
-.. _jrderuiter.github.io/snakemake-cnvseq-qdnaseq: http://jrderuiter.github.io/snakemake-cnvseq-qdnaseq
