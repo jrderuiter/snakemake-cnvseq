@@ -6,7 +6,7 @@ If you simply want to use this workflow, download and extract the
 workflow, fork this repository. Please consider providing any generally
 applicable modifications via a pull request.
 
-.. _latest release: https://github.com/jrderuiter/snakemake-cnvseq-qdnaseq/releases
+.. _latest release: https://github.com/jrderuiter/snakemake-cnvseq/releases
 
 To be able to run the workflow, you at least need to have snakemake and pandas
 installed. A basic (conda) environment containing these dependencies can be

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# snakemake-cnvseq-qdnaseq documentation build configuration file, created by
+# snakemake-cnvseq documentation build configuration file, created by
 # sphinx-quickstart.
 #
 # This file is execfile()d with the current directory set to its containing dir.
@@ -41,7 +41,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'snakemake-cnvseq-qdnaseq'
+project = u'snakemake-cnvseq'
 copyright = u'2017, Julian de Ruiter'
 author = u'Julian de Ruiter'
 
@@ -166,7 +166,7 @@ html_static_path = ['_static']
 # html_file_suffix = None
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'snakemake-cnvseq-qdnaseqdoc'
+htmlhelp_basename = 'snakemake-cnvseqdoc'
 
 
 # -- Options for LaTeX output --------------------------------------------------
@@ -186,8 +186,8 @@ latex_elements = {
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
     ('index',
-     'snakemake-cnvseq-qdnaseq.tex',
-     u'snakemake-cnvseq-qdnaseq Documentation',
+     'snakemake-cnvseq.tex',
+     u'snakemake-cnvseq Documentation',
      u"Julian de Ruiter", 'manual'),
 ]
 
@@ -217,8 +217,8 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'snakemake-cnvseq-qdnaseq',
-     u'snakemake-cnvseq-qdnaseq Documentation',
+    ('index', 'snakemake-cnvseq',
+     u'snakemake-cnvseq Documentation',
      [u"Julian de Ruiter"], 1)
 ]
 
@@ -232,9 +232,9 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    ('index', 'snakemake-cnvseq-qdnaseq',
-     u'snakemake-cnvseq-qdnaseq Documentation',
-     u"Julian de Ruiter", 'snakemake-cnvseq-qdnaseq',
+    ('index', 'snakemake-cnvseq',
+     u'snakemake-cnvseq Documentation',
+     u"Julian de Ruiter", 'snakemake-cnvseq',
      'A short description of the project.', 'Miscellaneous'),
 ]
 

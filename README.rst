@@ -1,9 +1,9 @@
-Snakemake-cnvseq-qdnaseq
-========================
+Snakemake-cnvseq
+================
 
 |Snakemake| |Wercker|
 
-Snakemake-cnvseq-qdnaseq is a snakemake workflow that generates copy number
+Snakemake-cnvseq is a snakemake workflow that generates copy number
 profiles/calls from CNV-seq (shallow whole genome sequencing) data. The
 workflow is designed to handle single-end and (optionally) multi-lane sequencing
 data. The actual copy number profiles and calls are generated using the
@@ -41,7 +41,7 @@ MarkDuplicates. The stats are summarized into a single report using multiqc.
 
 Alogether, this results in the following dependency graph:
 
-.. image:: https://jrderuiter.github.io/snakemake-cnvseq-qdnaseq/_images/dag.svg
+.. image:: https://jrderuiter.github.io/snakemake-cnvseq/_images/dag.svg
 
 Note that the QDNAseq step should be configured carefully to reflect the used
 genome and read length. Make sure that a bin annotation is available for your
@@ -55,7 +55,7 @@ your reads to a supported length in the ``cutadapt`` step.
 Documentation
 -------------
 
-Documentation is available at http://jrderuiter.github.io/snakemake-cnvseq-qdnaseq
+Documentation is available at http://jrderuiter.github.io/snakemake-cnvseq
 
 License
 -------
