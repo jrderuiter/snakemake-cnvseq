@@ -33,3 +33,7 @@ def parse_args():
     parser.add_argument('--gtf', required=True)
 
     return parser.parse_args()
+
+
+if __name__ == '__main__':
+    main()
