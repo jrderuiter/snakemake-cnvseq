@@ -1,0 +1,7 @@
+channels:
+  - bioconda
+  - conda-forge
+dependencies:
+  - pip
+  - pip:
+    - git+git@github.com:jrderuiter/genopandas.git@feature/matrices

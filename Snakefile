@@ -40,12 +40,21 @@ def get_sample_lanes(sample):
 # Rules                                                                        #
 ################################################################################
 
+def all_inputs(wildcards):
+    inputs = ["qdnaseq/logratios.txt", "qc/multiqc_report.html"]
+
+    samples = get_samples()
+    inputs += expand("bam/final/{sample}.bam", sample=samples)
+    inputs += expand("bam/final/{sample}.bam.bai", sample=samples)
+
+    if config["options"]["annotate_qdnaseq"]:
+        datatypes = ["calls", "logratios", "probs", "segmented"]
+        inputs += expand("qdnaseq/{datatype}.ann.txt", datatype=datatypes)
+
+    return inputs
+
 rule all:
-    input:
-        expand("bam/final/{sample}.bam", sample=get_samples()),
-        expand("bam/final/{sample}.bam.bai", sample=get_samples()),
-        "qdnaseq/logratios.txt",
-        "qc/multiqc_report.html"
+    input: all_inputs
 
 include: "rules/input.smk"
 include: "rules/fastq.smk"
