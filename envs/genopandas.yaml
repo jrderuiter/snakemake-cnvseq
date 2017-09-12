@@ -4,4 +4,4 @@ channels:
 dependencies:
   - pip
   - pip:
-    - git+git@github.com:jrderuiter/genopandas.git@feature/matrices
+    - git+https://github.com/jrderuiter/genopandas.git@feature/matrices
