@@ -2,6 +2,10 @@ channels:
   - bioconda
   - conda-forge
 dependencies:
+  - pandas
+  - matplotlib
+  - seaborn
+
   - pip
   - pip:
     - git+https://github.com/jrderuiter/genopandas.git@feature/matrices
