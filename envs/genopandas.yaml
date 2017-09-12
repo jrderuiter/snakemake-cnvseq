@@ -5,6 +5,7 @@ dependencies:
   - pandas
   - matplotlib
   - seaborn
+  - pysam
 
   - pip
   - pip:
