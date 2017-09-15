@@ -21,6 +21,12 @@ def main():
     region_values = RegionMatrix.from_csv(
         args.input, sep='\t', expand_index=True)
 
+    # Impute if needed.
+    if args.impute:
+        logging.info('Imputing values using neighboring bins')
+        region_values = region_values.impute(
+            window=args.impute_window, min_probes=args.impute_probes)
+
     # Annotate with genes.
     logging.info('Reading gene annotation')
     genes = GenomicDataFrame.from_gtf(
@@ -40,8 +46,12 @@ def parse_args():
     parser = argparse.ArgumentParser()
 
     parser.add_argument('--input', required=True)
-    parser.add_argument('--output', required=True)
     parser.add_argument('--gtf', required=True)
+    parser.add_argument('--output', required=True)
+
+    parser.add_argument('--impute', default=False, action='store_true')
+    parser.add_argument('--impute_window', default=11, type=int)
+    parser.add_argument('--impute_probes', default=5, type=int)
 
     return parser.parse_args()
 
