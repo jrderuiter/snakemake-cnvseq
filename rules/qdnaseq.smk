@@ -39,4 +39,4 @@ rule qdnaseq_annotate:
         path.join(workflow.basedir, "envs/genopandas.yaml")
     shell:
         "python {params.script} --input {input[0]}"
-        " --output {output[0]} --gtf {params.gtf}"
+        " --output {output[0]} --gtf {params.gtf} {params.extra}"

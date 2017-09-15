@@ -70,4 +70,4 @@ qdnaseq:
 
 qdnaseq_annotate:
   gtf:  '/path/to/gtf'
-  extra: ''
+  extra: '--impute'
