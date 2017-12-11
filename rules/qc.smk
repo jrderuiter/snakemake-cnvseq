@@ -3,8 +3,8 @@ from os import path
 
 rule multiqc:
     input:
-        expand("qc/fastqc/{sample_lane}.{pair}_fastqc.html",
-               sample_lane=get_samples_with_lane(), pair=["R1"]),
+        expand("qc/fastqc/{unit}.{pair}_fastqc.html",
+               unit=get_units(), pair=["R1"]),
         expand("qc/samtools_stats/{sample}.txt",
                sample=get_samples()),
         expand("qc/picard_mark_duplicates/{sample}.metrics",
@@ -12,7 +12,7 @@ rule multiqc:
     output:
         "qc/multiqc_report.html"
     params:
-        config["multiqc"]["extra"]
+        " ".join(config["rules"]["multiqc"]["extra"])
     log:
         "logs/multiqc.log"
     wrapper:
@@ -21,12 +21,12 @@ rule multiqc:
 
 rule fastqc:
     input:
-        "fastq/trimmed/{sample}.{lane}.{pair}.fastq.gz"
+        "fastq/trimmed/{unit}.{pair}.fastq.gz"
     output:
-        html="qc/fastqc/{sample}.{lane}.{pair}_fastqc.html",
-        zip="qc/fastqc/{sample}.{lane}.{pair}_fastqc.zip"
+        html="qc/fastqc/{unit}.{pair}_fastqc.html",
+        zip="qc/fastqc/{unit}.{pair}_fastqc.zip"
     params:
-        config["fastqc"]["extra"]
+        " ".join(config["rules"]["fastqc"]["extra"])
     wrapper:
         "0.17.0/bio/fastqc"
 

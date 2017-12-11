@@ -1,39 +1,25 @@
 import pandas as pd
 
 
-configfile: "config.yaml"
-
-################################################################################
-# Globals                                                                      #
-################################################################################
-
-samples = pd.read_csv("samples.tsv", sep="\t")
-
-
 ################################################################################
 # Functions                                                                    #
 ################################################################################
 
 def get_samples():
     """Returns list of all samples."""
-    return list(samples["sample"].unique())
+    return list(config["samples"].keys())
 
+def get_units():
+    """Returns list of units."""
+    return list(config["units"].keys())
 
-def get_normal_samples():
-    """Returns list of normal samples."""
-    subset = samples.loc[samples["type"] == "normal"]
-    return list(subset["sample"].unique())
-
-
-def get_samples_with_lane():
-    """Returns list of all combined lane/sample identifiers."""
-    return list((samples["sample"] + "." + samples["lane"]).unique())
-
-
-def get_sample_lanes(sample):
+def get_sample_units(sample):
     """Returns lanes for given sample."""
-    subset = samples.loc[samples["sample"] == sample]
-    return list(subset["lane"].unique())
+    return config["samples"][sample]
+
+def get_normals():
+    """Returns list of normal samples."""
+    return config["normals"]
 
 
 ################################################################################
@@ -47,7 +33,7 @@ def all_inputs(wildcards):
     inputs += expand("bam/final/{sample}.bam", sample=samples)
     inputs += expand("bam/final/{sample}.bam.bai", sample=samples)
 
-    if config["options"]["annotate_qdnaseq"]:
+    if config["options"]["qdnaseq"]["annotate"]:
         datatypes = ["calls", "logratios", "probs", "segmented"]
         inputs += expand("qdnaseq/{datatype}.ann.txt", datatype=datatypes)
 

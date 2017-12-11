@@ -12,12 +12,12 @@ rule qdnaseq:
         probs="qdnaseq/probs.txt",
         plots="qdnaseq/plots"
     params:
-        genome=config["qdnaseq"]["genome"],
-        organism=config["qdnaseq"]["organism"],
-        bin_size=config["qdnaseq"]["bin_size"],
-        read_length=config["qdnaseq"]["read_length"],
-        blacklists=config["qdnaseq"]["blacklists"],
-        normals=get_normal_samples()
+        genome=config["references"]["qdnaseq"]["genome"],
+        organism=config["references"]["qdnaseq"]["organism"],
+        bin_size=config["options"]["qdnaseq"]["bin_size"],
+        read_length=config["options"]["qdnaseq"]["read_length"],
+        blacklists=config["options"]["qdnaseq"]["blacklists"],
+        normals=get_normals()
     conda:
         path.join(workflow.basedir, "envs/qdnaseq.yaml")
     log:
@@ -28,15 +28,15 @@ rule qdnaseq:
 
 rule qdnaseq_annotate:
     input:
-        "qdnaseq/{datatype}.txt"
+        data="qdnaseq/{datatype}.txt",
+        gtf=config["references"]["gtf"]
     output:
         "qdnaseq/{datatype}.ann.txt"
     params:
         script=path.join(workflow.basedir, "scripts/qdnaseq_annotate.py"),
-        gtf=config["qdnaseq_annotate"]["gtf"],
-        extra=config["qdnaseq_annotate"]["extra"]
+        extra=" ".join(config["rules"]["qdnaseq_annotate"]["extra"])
     conda:
         path.join(workflow.basedir, "envs/genopandas.yaml")
     shell:
-        "python {params.script} --input {input[0]}"
-        " --output {output[0]} --gtf {params.gtf} {params.extra}"
+        "python {params.script} --input {input.data}"
+        " --output {output[0]} --gtf {input.gtf} {params.extra}"
