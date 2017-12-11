@@ -33,7 +33,8 @@
         "cutadapt": {
             "extra": [
                 "-a AGATCGGAAGAGCACACGTCTGAACTCCAGTCAC",
-                "--minimum-length 20"]
+                "--minimum-length 20"],
+            "threads": 5
         },
         "bwa_aln": {
             "extra": [],
