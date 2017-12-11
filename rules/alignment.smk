@@ -20,9 +20,9 @@ rule bwa_aln:
 def samse_extra():
     extra = config["rules"]["bwa_samse"]["extra"]
 
-    readgroup_str = ('@RG\tID:{{unit}}\tSM:{{params.sample}}\t'
+    readgroup_str = ('"@RG\tID:{{unit}}\tSM:{{params.sample}}\t'
                      'LB:{{params.sample}}\tPU:{{unit}}\t'
-                     'PL:{platform}\tCN:{centre}')
+                     'PL:{platform}\tCN:{centre}"')
 
     readgroup_str = readgroup_str.format(
         platform=config["options"]["readgroup_platform"],
