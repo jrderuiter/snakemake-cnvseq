@@ -8,7 +8,9 @@
             "read_length": 50,
             "blacklists": ["custom.bed"],
             "annotate": true
-        }
+        },
+        "readgroup_platform": "ILLUMINA",
+        "readgroup_centre": "CENTRE"
     },
     "references": {
         "gtf": "input/reference.gtf",
@@ -38,7 +40,7 @@
             "threads": 10
         },
         "bwa_samse": {
-            "extra": ["-r \"@RG\\tID:{unit}\\tSM:{params.sample}\\tLB:{params.sample}\\tPU:{unit}\\tPL:ILLUMINA\\tCN:CENTRE\""],
+            "extra": [],
             "sort_extra": []
         },
         "samtools_merge": {

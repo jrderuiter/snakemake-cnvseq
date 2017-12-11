@@ -17,6 +17,22 @@ rule bwa_aln:
         "0.17.0/bio/bwa/aln"
 
 
+def samse_extra():
+    extra = config["rules"]["bwa_samse"]["extra"]
+
+    readgroup_str = ('@RG\tID:{{unit}}\tSM:{{params.sample}}\t'
+                     'LB:{{params.sample}}\tPU:{{unit}}\t'
+                     'PL:{platform}\tCN:{centre}')
+
+    readgroup_str = readgroup_str.format(
+        platform=config["options"]["readgroup_platform"],
+        centre=config["options"]["readgroup_centre"])
+
+    extra.append('-r ' + readgroup_str)
+
+    return " ".join(extra)
+
+
 rule bwa_samse:
     input:
         fastq="fastq/trimmed/{unit}.R1.fastq.gz",
@@ -26,7 +42,7 @@ rule bwa_samse:
     params:
         sample=lambda wc: get_sample_for_unit(wc.unit),
         index=config["references"]["bwa_index"],
-        extra=" ".join(config["rules"]["bwa_samse"]["extra"]),
+        extra=samse_extra(),
         sort="samtools",
         sort_order="coordinate",
         sort_extra=" ".join(config["rules"]["bwa_samse"]["sort_extra"])
