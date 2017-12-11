@@ -24,6 +24,7 @@ rule bwa_samse:
     output:
         temp("bam/aligned/{unit}.bam")
     params:
+        sample=lambda wc: get_sample_for_unit(wc.unit),
         index=config["references"]["bwa_index"],
         extra=" ".join(config["rules"]["bwa_samse"]["extra"]),
         sort="samtools",
@@ -31,8 +32,10 @@ rule bwa_samse:
         sort_extra=" ".join(config["rules"]["bwa_samse"]["sort_extra"])
     log:
         "logs/bwa_samse/{unit}.log"
-    wrapper:
-        "0.17.0/bio/bwa/samse"
+    #wrapper:
+    shell:
+        "{input} {params.sample}"
+        # "0.17.0/bio/bwa/samse"
 
 
 def merge_inputs(wildcards):
