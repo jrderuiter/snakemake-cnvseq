@@ -1,0 +1,13 @@
+channels:
+  - bioconda
+  - conda-forge
+dependencies:
+  - python >=3.5
+  - pandas
+  - matplotlib
+  - seaborn
+  - pysam
+
+  - pip
+  - pip:
+    - git+https://github.com/jrderuiter/genopandas.git@feature/matrices
