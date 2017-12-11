@@ -20,4 +20,4 @@ rule cutadapt:
     log:
         "logs/cutadapt/{unit}.log"
     wrapper:
-        path.join(workflow.basedir, "wrappers", "cutadapt", "se")
+        "file://" + path.join(workflow.basedir, "wrappers", "cutadapt", "se")
