@@ -1,5 +1,7 @@
 import pandas as pd
 
+configfile: 'config.json'
+
 
 ################################################################################
 # Functions                                                                    #
