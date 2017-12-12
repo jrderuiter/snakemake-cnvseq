@@ -9,8 +9,10 @@
             "blacklists": ["custom.bed"],
             "annotate": true
         },
-        "readgroup_platform": "ILLUMINA",
-        "readgroup_centre": "CENTRE"
+        "readgroup": {
+            "platform": "ILLUMINA",
+            "centre": "CENTRE"
+        }
     },
     "references": {
         "gtf": "input/reference.gtf",

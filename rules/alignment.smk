@@ -29,8 +29,8 @@ def samse_extra(wildcards):
     readgroup_str = readgroup_str.format(
         sample=get_sample_for_unit(wildcards.unit),
         unit=wildcards.unit,
-        platform=config["options"]["readgroup_platform"],
-        centre=config["options"]["readgroup_centre"])
+        platform=config["options"]["readgroup"]["platform"],
+        centre=config["options"]["readgroup"]["centre"])
 
     extra += ['-r ' + readgroup_str]
 
