@@ -1,6 +1,7 @@
 def cutadapt_extra(wildcards):
 
-    extra = config["rules"]["cutadapt"]["extra"]
+    extra = list(config["rules"]["cutadapt"]["extra"])
+
     extra += ['--length {}'.format(
         config["options"]["qdnaseq"]["read_length"])]
 

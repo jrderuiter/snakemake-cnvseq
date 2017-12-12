@@ -1,6 +1,7 @@
 import pandas as pd
 
-configfile: 'config.json'
+if not config:
+    raise ValueError("A config file must be provided using --configfile")
 
 def _invert_dict(d):
     return dict( (v,k) for k in d for v in d[k] )
@@ -52,6 +53,7 @@ def all_inputs(wildcards):
 
 rule all:
     input: all_inputs
+    output: touch(".all")
 
 include: "rules/input.smk"
 include: "rules/fastq.smk"

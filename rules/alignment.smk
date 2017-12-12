@@ -17,18 +17,22 @@ rule bwa_aln:
         "0.17.0/bio/bwa/aln"
 
 
-def samse_extra():
-    extra = config["rules"]["bwa_samse"]["extra"]
+def samse_extra(wildcards):
+    """Generates bwa samse extra arguments."""
 
-    readgroup_str = ('"@RG\tID:{{unit}}\tSM:{{params.sample}}\t'
-                     'LB:{{params.sample}}\tPU:{{unit}}\t'
-                     'PL:{platform}\tCN:{centre}"')
+    extra = list(config["rules"]["bwa_samse"]["extra"])
+
+    readgroup_str = ('\"@RG\\tID:{unit}\\tSM:{sample}\\t'
+                     'LB:{sample}\\tPU:{unit}\\t'
+                     'PL:{platform}\\tCN:{centre}\"')
 
     readgroup_str = readgroup_str.format(
+        sample=get_sample_for_unit(wildcards.unit),
+        unit=wildcards.unit,
         platform=config["options"]["readgroup_platform"],
         centre=config["options"]["readgroup_centre"])
 
-    extra.append('-r ' + readgroup_str)
+    extra += ['-r ' + readgroup_str]
 
     return " ".join(extra)
 
@@ -40,18 +44,15 @@ rule bwa_samse:
     output:
         temp("bam/aligned/{unit}.bam")
     params:
-        sample=lambda wc: get_sample_for_unit(wc.unit),
         index=config["references"]["bwa_index"],
-        extra=samse_extra(),
+        extra=lambda wc: samse_extra(wc),
         sort="samtools",
         sort_order="coordinate",
         sort_extra=" ".join(config["rules"]["bwa_samse"]["sort_extra"])
     log:
         "logs/bwa_samse/{unit}.log"
-    #wrapper:
-    shell:
-        "{input} {params.sample}"
-        # "0.17.0/bio/bwa/samse"
+    wrapper:
+        "0.17.0/bio/bwa/samse"
 
 
 def merge_inputs(wildcards):
