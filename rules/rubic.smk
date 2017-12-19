@@ -1,10 +1,5 @@
 from os import path
 
-import pandas as pd
-import pybiomart
-
-from genopandas.ngs.cnv import CnvValueMatrix
-
 
 rule rubic_prepare_markers:
     input:
@@ -14,27 +9,10 @@ rule rubic_prepare_markers:
         chromosome_map=config["references"]["rubic"]["chromosome_map"]
     output:
         "rubic/inputs/markers.txt"
-    run:
-        # Read values.
-        segmented = CnvValueMatrix.from_csv_condensed(input[0], sep='\t')
-
-        # Map chromosomes (if needed) and subset.
-        if params.chromosome_map:
-            segmented = segmented.rename_chromosomes(params.chromosome_map)
-
-        segmented = segmented.gloc[params.chromosomes]
-
-        # Convert to markers.
-        markers = pd.DataFrame(
-            {
-                'Name': ['P{}'.format(i + 1) for i in
-                         range(segmented.shape[0])],
-                'Chromosome': segmented.gloc.chromosome,
-                'Position': segmented.gloc.position
-            },
-            columns=['Name', 'Chromosome', 'Position'])
-
-        markers.to_csv(output[0], sep="\t", index=False)
+    conda:
+        path.join(workflow.basedir, "envs", "genopandas.yaml")
+    script:
+        path.join(workflow.basedir, "scripts", "rubic", "prepare_markers.py")
 
 
 rule rubic_prepare_segments:
@@ -45,68 +23,10 @@ rule rubic_prepare_segments:
         chromosome_map=config["references"]["rubic"]["chromosome_map"]
     output:
         "rubic/inputs/segments.txt"
-    run:
-        # Read segmented values.
-        segmented = CnvValueMatrix.from_csv_condensed(input[0], sep='\t')
-
-        # Map chromosomes (if needed).
-        if params.chromosome_map:
-            segmented = segmented.rename_chromosomes(params.chromosome_map)
-
-        # Convert to segments.
-        segments = segmented.as_segments().reset_index()
-
-        # Order by sample/genomic position.
-        segments = (
-            segments
-            .assign(chromosome=lambda df: pd.Categorical(
-                df['chromosome'], categories=params.chromosomes))
-            .dropna(subset=['chromosome'])
-            .sort_values(by=["sample", "chromosome", "start", "end"]))
-
-        # Rename and re-order columns.
-        segments = segments.rename(columns={
-            'chromosome': 'Chromosome',
-            'start': 'Start',
-            'end': 'End',
-            'value': 'LogRatio',
-            'sample': 'Sample'
-        })
-
-        segments = segments.reindex(columns=[
-            'Sample', 'Chromosome', 'Start', 'End', 'LogRatio'])
-
-        # Write output.
-        segments.to_csv(output[0], sep="\t", index=False)
-
-
-def fetch_genes(host, dataset, chromosomes=None):
-    """Fetches gene definition from biomart."""
-
-    dataset = pybiomart.Dataset(name=dataset, host=host)
-
-    if chromosomes is not None:
-        filters = {'chromosome_name': chromosomes}
-    else:
-        filters = {}
-
-    result = dataset.query(
-        attributes=[
-            'ensembl_gene_id', 'external_gene_name', 'chromosome_name',
-            'start_position', 'end_position'
-        ],
-        filters=filters,
-        use_attr_names=True)
-
-    genes = result.rename(columns={
-        'ensembl_gene_id': 'ID',
-        'external_gene_name': 'Name',
-        'chromosome_name': 'Chromosome',
-        'start_position': 'Start',
-        'end_position': 'End'
-    })
-
-    return genes
+    conda:
+        path.join(workflow.basedir, "envs", "genopandas.yaml")
+    script:
+        path.join(workflow.basedir, "scripts", "rubic", "prepare_segments.py")
 
 
 rule rubic_prepare_genes:
@@ -116,12 +36,10 @@ rule rubic_prepare_genes:
         host=config["references"]["rubic"]["biomart_host"],
         dataset=config["references"]["rubic"]["biomart_dataset"],
         chromosomes=config["references"]["rubic"]["chromosomes"]
-    run:
-        genes = fetch_genes(
-            host=params.host,
-            dataset=params.dataset,
-            chromosomes=params.chromosomes)
-        genes.to_csv(output[0], sep="\t", index=False)
+    conda:
+        path.join(workflow.basedir, "envs", "pybiomart.yaml")
+    script:
+        path.join(workflow.basedir, "scripts", "rubic", "fetch_genes.py")
 
 
 rule rubic:

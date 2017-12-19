@@ -12,27 +12,10 @@ rule gistic_prepare_markers:
         chromosome_map=config["references"]["gistic"]["chromosome_map"]
     output:
         "gistic/inputs/markers.txt"
-    run:
-        # Read values.
-        segmented = CnvValueMatrix.from_csv_condensed(input[0], sep='\t')
-
-        # Map chromosomes (if needed) and subset.
-        if params.chromosome_map:
-            segmented = segmented.rename_chromosomes(params.chromosome_map)
-
-        segmented = segmented.gloc[params.chromosomes]
-
-        # Convert to markers.
-        markers = pd.DataFrame(
-            {
-                'Marker Name': ['P{}'.format(i + 1) for i in
-                         range(segmented.shape[0])],
-                'Chromosome': segmented.gloc.chromosome,
-                'Marker Position': segmented.gloc.position
-            },
-            columns=['Marker Name', 'Chromosome', 'Marker Position'])
-
-        markers.to_csv(output[0], sep="\t", index=False)
+    conda:
+        path.join(workflow.basedir, "envs", "genopandas.yaml")
+    script:
+        path.join(workflow.basedir, "scripts", "gistic", "prepare_markers.py")
 
 
 rule gistic_prepare_segments:
@@ -43,41 +26,10 @@ rule gistic_prepare_segments:
         chromosome_map=config["references"]["gistic"]["chromosome_map"]
     output:
         "gistic/inputs/segments.txt"
-    run:
-        # Read segmented values.
-        segmented = CnvValueMatrix.from_csv_condensed(input[0], sep='\t')
-
-        # Map chromosomes (if needed).
-        if params.chromosome_map:
-            segmented = segmented.rename_chromosomes(params.chromosome_map)
-
-        # Convert to segments.
-        segments = segmented.as_segments().reset_index()
-
-        # Order by sample/genomic position.
-        segments = (
-            segments
-            .assign(chromosome=lambda df: pd.Categorical(
-                df['chromosome'], categories=params.chromosomes))
-            .dropna(subset=['chromosome'])
-            .sort_values(by=["sample", "chromosome", "start", "end"]))
-
-        # Rename and re-order columns.
-        segments = segments.rename(columns={
-            'chromosome': 'Chromosome',
-            'start': 'Start Position',
-            'end': 'End Position',
-            'value': 'Seg.CN',
-            'size': 'Num markers',
-            'sample': 'Sample'
-        })
-
-        segments = segments.reindex(columns=[
-            'Sample', 'Chromosome', 'Start Position', 'End Position',
-            'Num markers', 'Seg.CN'])
-
-        # Write output.
-        segments.to_csv(output[0], sep="\t", index=False)
+    conda:
+        path.join(workflow.basedir, "envs", "genopandas.yaml")
+    script:
+        path.join(workflow.basedir, "scripts", "gistic", "prepare_segments.py")
 
 
 rule gistic_prepare_samples:
