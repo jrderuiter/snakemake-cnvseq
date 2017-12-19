@@ -16,9 +16,10 @@ rule cutadapt:
         qc="qc/cutadapt/{unit}.txt"
     params:
         cutadapt_extra
-    threads:
-        config["rules"]["cutadapt"]["threads"]
+    #threads:
+    #    config["rules"]["cutadapt"]["threads"]
     log:
         "logs/cutadapt/{unit}.log"
     wrapper:
-        "file://" + path.join(workflow.basedir, "wrappers", "cutadapt", "se")
+        "0.17.0/bio/cutadapt/se"
+    #    "file://" + path.join(workflow.basedir, "wrappers", "cutadapt", "se")
