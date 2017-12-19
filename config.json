@@ -3,16 +3,18 @@
         "dir": "input"
     },
     "options": {
+        "readgroup": {
+            "platform": "ILLUMINA",
+            "centre": "CENTRE"
+        },
         "qdnaseq": {
             "bin_size": 50,
             "read_length": 50,
             "blacklists": ["input/custom.bed"],
             "annotate": true
         },
-        "readgroup": {
-            "platform": "ILLUMINA",
-            "centre": "CENTRE"
-        }
+        "rubic": true,
+        "gistic": true
     },
     "references": {
         "gtf": "input/reference.gtf",
@@ -20,6 +22,23 @@
         "qdnaseq": {
             "genome": "mm10",
             "organism": "other"
+        },
+        "rubic": {
+            "biomart_host": "http://aug2014.archive.ensembl.org",
+            "biomart_dataset": "mmusculus_gene_ensembl",
+            "chromosomes": [
+                "1", "2", "3", "4", "5", "6", "7", "8", "9",
+                "10", "11", "12", "13", "14", "15", "16", "17",
+                "18", "19", "X"],
+            "chromosome_map": null
+        },
+        "gistic": {
+            "mat": "input/gistic.mat",
+            "chromosomes": [
+                "1", "2", "3", "4", "5", "6", "7", "8", "9",
+                "10", "11", "12", "13", "14", "15", "16", "17",
+                "18", "19", "X"],
+            "chromosome_map": null
         }
     },
     "samples": {
@@ -31,6 +50,9 @@
         "S2.L001": ["S2.L001.R1.fastq.gz"]
     },
     "normals": ["S1"],
+    "groups": {
+        "group1": ["S1", "S2"]
+    },
     "rules": {
         "cutadapt": {
             "extra": [
@@ -63,7 +85,16 @@
             "extra": []
         },
         "qdnaseq_annotate": {
-            "extra": ["--impute"]
+            "extra": ["--impute", "--one_based"]
+        },
+        "rubic": {
+            "focal_threshold": 1e+08,
+            "min_probes": 4,
+            "fdr": 0.25
+        },
+        "gistic": {
+            "gistic_root": "/path/to/gistic",
+            "extra": []
         }
     }
 }

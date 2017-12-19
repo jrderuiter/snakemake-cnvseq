@@ -33,6 +33,14 @@ def get_normals():
     """Returns list of normal samples."""
     return config["normals"]
 
+def get_groups():
+    """Returns list of available sample groups."""
+    return list(config["groups"].keys())
+
+def get_samples_for_group(wildcards):
+    """Returns list of samples in given group."""
+    return config["groups"][wildcards.group]
+
 
 ################################################################################
 # Rules                                                                        #
@@ -49,14 +57,32 @@ def all_inputs(wildcards):
         datatypes = ["calls", "logratios", "probs", "segmented"]
         inputs += expand("qdnaseq/{datatype}.ann.txt", datatype=datatypes)
 
+    if config["options"]["rubic"]:
+        inputs += expand("rubic/results/{group}/focal_gains.tsv",
+                         group=get_groups())
+
+    if config["options"]["gistic"]:
+        inputs += expand("gistic/results/{group}/amp_qplot.pdf",
+                         group=get_groups())
+
     return inputs
+
 
 rule all:
     input: all_inputs
     output: touch(".all")
+
 
 include: "rules/input.smk"
 include: "rules/fastq.smk"
 include: "rules/alignment.smk"
 include: "rules/qdnaseq.smk"
 include: "rules/qc.smk"
+
+
+if config["options"]["rubic"]:
+    include: "rules/rubic.smk"
+
+if config["options"]["gistic"]:
+    include: "rules/gistic.smk"
+
