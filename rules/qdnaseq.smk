@@ -3,7 +3,8 @@ from os import path
 
 rule qdnaseq:
     input:
-        expand("bam/final/{sample}.bam", sample=get_samples())
+        bams=expand("bam/final/{sample}.bam", sample=get_samples()),
+        blacklists=config["options"]["qdnaseq"]["blacklists"]
     output:
         rds="qdnaseq/cgh.rds",
         logratios="qdnaseq/logratios.txt",
@@ -16,7 +17,6 @@ rule qdnaseq:
         organism=config["references"]["qdnaseq"]["organism"],
         bin_size=config["options"]["qdnaseq"]["bin_size"],
         read_length=config["options"]["qdnaseq"]["read_length"],
-        blacklists=config["options"]["qdnaseq"]["blacklists"],
         normals=get_normals()
     conda:
         path.join(workflow.basedir, "envs/qdnaseq.yaml")

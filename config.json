@@ -6,7 +6,7 @@
         "qdnaseq": {
             "bin_size": 50,
             "read_length": 50,
-            "blacklists": ["custom.bed"],
+            "blacklists": ["input/custom.bed"],
             "annotate": true
         },
         "readgroup": {
