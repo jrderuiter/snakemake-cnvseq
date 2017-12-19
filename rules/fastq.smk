@@ -18,6 +18,8 @@ rule cutadapt:
         cutadapt_extra
     #threads:
     #    config["rules"]["cutadapt"]["threads"]
+    conda:
+        path.join(workflow.basedir, "envs", "cutadapt.yaml")
     log:
         "logs/cutadapt/{unit}.log"
     wrapper:

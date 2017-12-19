@@ -1,0 +1,6 @@
+channels:
+  - bioconda
+  - conda-forge
+dependencies:
+  - cutadapt ==1.13
+  - xopen ==0.1.1
