@@ -1,0 +1,69 @@
+{
+    "input": {
+        "dir": "input"
+    },
+    "options": {
+        "qdnaseq": {
+            "bin_size": 50,
+            "read_length": 50,
+            "blacklists": ["input/custom.bed"],
+            "annotate": true
+        },
+        "readgroup": {
+            "platform": "ILLUMINA",
+            "centre": "CENTRE"
+        }
+    },
+    "references": {
+        "gtf": "input/reference.gtf",
+        "bwa_index": "/path/to/index",
+        "qdnaseq": {
+            "genome": "mm10",
+            "organism": "other"
+        }
+    },
+    "samples": {
+        "S1": ["S1.L001"],
+        "S2": ["S2.L001"]
+    },
+    "units": {
+        "S1.L001": ["S1.L001.R1.fastq.gz"],
+        "S2.L001": ["S2.L001.R1.fastq.gz"]
+    },
+    "normals": ["S1"],
+    "rules": {
+        "cutadapt": {
+            "extra": [
+                "-a AGATCGGAAGAGCACACGTCTGAACTCCAGTCAC",
+                "--minimum-length 20"],
+            "threads": 5
+        },
+        "bwa_aln": {
+            "extra": [],
+            "threads": 10
+        },
+        "bwa_samse": {
+            "extra": [],
+            "sort_extra": []
+        },
+        "samtools_merge": {
+            "extra": [],
+            "threads": 10
+        },
+        "picard_mark_duplicates": {
+            "extra": [
+                "-XX:ParallelGCThreads=5",
+                "VALIDATION_STRINGENCY=LENIENT"
+            ]
+        },
+        "multiqc": {
+            "extra": []
+        },
+        "fastqc": {
+            "extra": []
+        },
+        "qdnaseq_annotate": {
+            "extra": ["--impute"]
+        }
+    }
+}

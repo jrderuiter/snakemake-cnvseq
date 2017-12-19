@@ -126,13 +126,13 @@ bins <- getBinAnnotations(
     genome=snakemake@params$genome)
 
 # Use external blacklists if given.
-if (!is.null(snakemake@params$blacklists)) {
+if (!is.null(snakemake@inputs$blacklists)) {
     bins$blacklist <- calculateBlacklist(
-        bins@data, snakemake@params$blacklists)
+        bins@data, snakemake@inputs$blacklists)
 }
 
 # Perform analysis
-readCounts <- binReadCounts(bins, bamfiles=as.character(snakemake@input))
+readCounts <- binReadCounts(bins, bamfiles=as.character(snakemake@input$bams))
 
 readCountsFiltered <- applyFilters(
     readCounts, residual=TRUE, blacklist=TRUE,
