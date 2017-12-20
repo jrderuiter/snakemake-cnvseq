@@ -4,7 +4,7 @@ from os import path
 rule qdnaseq:
     input:
         bams=expand("bam/final/{sample}.bam", sample=get_samples()),
-        blacklists=config["options"]["qdnaseq"]["blacklists"]
+        blacklists=config["references"]["qdnaseq"]["blacklists"]
     output:
         rds="qdnaseq/cgh.rds",
         logratios="qdnaseq/logratios.txt",
