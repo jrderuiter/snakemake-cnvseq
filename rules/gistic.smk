@@ -1,7 +1,6 @@
 from os import path
 
 import pandas as pd
-from genopandas.ngs.cnv import CnvValueMatrix
 
 
 rule gistic_prepare_markers:
