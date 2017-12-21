@@ -23,7 +23,7 @@ rule qdnaseq:
     log:
         "logs/qdnaseq.log"
     script:
-        path.join(workflow.basedir, "scripts/qdnaseq.R")
+        path.join(workflow.basedir, "scripts/qdnaseq/qdnaseq.R")
 
 
 rule qdnaseq_annotate:
@@ -33,7 +33,8 @@ rule qdnaseq_annotate:
     output:
         "qdnaseq/{datatype}.ann.txt"
     params:
-        script=path.join(workflow.basedir, "scripts/qdnaseq_annotate.py"),
+        script=path.join(workflow.basedir, "scripts", "qdnaseq",
+                         "annotate_calls.py"),
         extra=" ".join(config["rules"]["qdnaseq_annotate"]["extra"])
     conda:
         path.join(workflow.basedir, "envs/genopandas.yaml")

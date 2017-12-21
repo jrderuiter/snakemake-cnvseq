@@ -62,4 +62,4 @@ rule rubic:
     log:
         'logs/rubic/{group}.log'
     script:
-        path.join(workflow.basedir, "scripts/rubic.R")
+        path.join(workflow.basedir, "scripts/rubic/rubic.R")

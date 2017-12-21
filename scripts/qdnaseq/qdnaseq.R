@@ -126,9 +126,9 @@ bins <- getBinAnnotations(
     genome=snakemake@params$genome)
 
 # Use external blacklists if given.
-if (!is.null(snakemake@inputs$blacklists)) {
+if (!is.null(snakemake@input$blacklists)) {
     bins$blacklist <- calculateBlacklist(
-        bins@data, snakemake@inputs$blacklists)
+        bins@data, snakemake@input$blacklists)
 }
 
 # Perform analysis
