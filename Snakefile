@@ -1,13 +1,12 @@
 import pandas as pd
 
+if not config:
+    raise ValueError("A config file must be provided using --configfile")
 
-configfile: "config.yaml"
+def _invert_dict(d):
+    return dict( (v,k) for k in d for v in d[k] )
 
-################################################################################
-# Globals                                                                      #
-################################################################################
-
-samples = pd.read_csv("samples.tsv", sep="\t")
+_unit_sample_lookup = _invert_dict(config['samples'])
 
 
 ################################################################################
@@ -16,24 +15,31 @@ samples = pd.read_csv("samples.tsv", sep="\t")
 
 def get_samples():
     """Returns list of all samples."""
-    return list(samples["sample"].unique())
+    return list(config["samples"].keys())
 
+def get_units():
+    """Returns list of units."""
+    return list(config["units"].keys())
 
-def get_normal_samples():
-    """Returns list of normal samples."""
-    subset = samples.loc[samples["type"] == "normal"]
-    return list(subset["sample"].unique())
-
-
-def get_samples_with_lane():
-    """Returns list of all combined lane/sample identifiers."""
-    return list((samples["sample"] + "." + samples["lane"]).unique())
-
-
-def get_sample_lanes(sample):
+def get_sample_units(sample):
     """Returns lanes for given sample."""
-    subset = samples.loc[samples["sample"] == sample]
-    return list(subset["lane"].unique())
+    return config["samples"][sample]
+
+def get_sample_for_unit(unit):
+    """Returns sample for given unit."""
+    return _unit_sample_lookup[unit]
+
+def get_normals():
+    """Returns list of normal samples."""
+    return config["normals"]
+
+def get_groups():
+    """Returns list of available sample groups."""
+    return list(config["groups"].keys())
+
+def get_samples_for_group(wildcards):
+    """Returns list of samples in given group."""
+    return config["groups"][wildcards.group]
 
 
 ################################################################################
@@ -47,17 +53,36 @@ def all_inputs(wildcards):
     inputs += expand("bam/final/{sample}.bam", sample=samples)
     inputs += expand("bam/final/{sample}.bam.bai", sample=samples)
 
-    if config["options"]["annotate_qdnaseq"]:
+    if config["options"]["qdnaseq"]["annotate"]:
         datatypes = ["calls", "logratios", "probs", "segmented"]
         inputs += expand("qdnaseq/{datatype}.ann.txt", datatype=datatypes)
 
+    if config["options"]["rubic"]:
+        inputs += expand("rubic/results/{group}/focal_gains.tsv",
+                         group=get_groups())
+
+    if config["options"]["gistic"]:
+        inputs += expand("gistic/results/{group}/amp_qplot.pdf",
+                         group=get_groups())
+
     return inputs
+
 
 rule all:
     input: all_inputs
+    output: touch(".all")
+
 
 include: "rules/input.smk"
 include: "rules/fastq.smk"
 include: "rules/alignment.smk"
 include: "rules/qdnaseq.smk"
 include: "rules/qc.smk"
+
+
+if config["options"]["rubic"]:
+    include: "rules/rubic.smk"
+
+if config["options"]["gistic"]:
+    include: "rules/gistic.smk"
+

@@ -3,7 +3,97 @@
 ################################################################################
 
 options:
-  annotate_qdnaseq: True
+    # Read group information to use for BWA.
+    readgroup:
+        platform: ILLUMINA
+        centre: CENTRE
+
+    # QDNAseq configuration. Includes bin_size/read_length configuration,
+    # which is shared between rules to ensure proper read lengths.
+    qdnaseq:
+        annotate: true
+        bin_size: 50
+        read_length: 50
+
+    # Whether to run RUBIC/GISTIC.
+    rubic: true
+    gistic: true
+
+
+################################################################################
+# References                                                                   #
+################################################################################
+
+references:
+    bwa_index: /path/to/index
+    gtf: input/reference.gtf
+    qdnaseq:
+        genome: mm10
+        organism: other
+        blacklists: ["input/custom.bed"]
+    rubic:
+        # Biomart host/dataset to use for gene definitions.
+        biomart_host: "http://aug2014.archive.ensembl.org"
+        biomart_dataset: mmusculus_gene_ensembl
+
+        # Chromosomes to include in the analysis.
+        chromosomes: [
+            "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11",
+            "12", "13", "14", "15", "16", "17", "18", "19", "X"]
+
+        # Chromosome mapping (to map chromosomes from the input to
+        # match with the chromosome notation used in the biomart dataset).
+        chromosome_map: ~
+
+    gistic:
+        # Gistic reference file.
+        mat: input/gistic.mat
+
+        # Chromosomes/mapping (same as for RUBIC).
+        chromosomes: [
+            "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11",
+            "12", "13", "14", "15", "16", "17", "18", "19", "X"]
+        chromosome_map: ~
+
+
+################################################################################
+# Rule-specific configuration                                                  #
+################################################################################
+
+rules:
+    cutadapt:
+        extra:
+            - "-a AGATCGGAAGAGCACACGTCTGAACTCCAGTCAC"
+            - "--minimum-length 20"
+        threads: 5
+    bwa_aln:
+        extra: []
+        threads: 10
+    bwa_samse:
+        extra: []
+        sort_extra: []
+    samtools_merge:
+        extra: []
+        threads: 10
+    picard_mark_duplicates:
+        extra:
+            - "-XX:ParallelGCThreads=5"
+            - VALIDATION_STRINGENCY=LENIENT
+    qdnaseq_annotate:
+        extra:
+            - "--impute"
+            - "--one_based"
+    multiqc:
+        extra: []
+    fastqc:
+        extra: []
+    rubic:
+        fdr: 0.25
+        focal_threshold: 1e+08
+        min_probes: 4
+    gistic:
+        extra: []
+        gistic_root: /path/to/gistic
 
 
 ################################################################################
@@ -11,63 +101,33 @@ options:
 ################################################################################
 
 input:
-  # Optional: input directory to use for fastq files (for local input files).
-  dir: 'input'
-
-  # Optional: configuration to use for remote (FTP) input files.
-  # ftp:
-  #   username: 'user'
-  #   password: 'pass'
+    # Input directory (unit paths are taken relative to this directory).
+    dir: input
 
 
 ################################################################################
-# Rule configuration                                                           #
+# Sample (group) configuration                                                 #
 ################################################################################
 
-cutadapt:
-  # Parameter --length is required to trim reads to the read length
-  # expected by the used qdnaseq reference. Can be omitted if reads
-  # are already of the expected length.
-  extra: >-
-    --length 50
-    -a AGATCGGAAGAGCACACGTCTGAACTCCAGTCAC
-    --minimum-length 30
+# Samples are separated into samples and units, where multiple units are merged
+# into a single sample. This allows to have data from more than one sequencing
+# run or lane for a sample.
 
-bwa_aln:
-  index: '/path/to/index'
-  extra: ''
-  threads: 10
+samples:
+    S1: ["S1.L001"]
+    S2: ["S2.L001"]
 
-bwa_samse:
-  index: '/path/to/index'
-  # Note that MarkDuplicates requires the LB tag to be set.
-  extra: "-r \"@RG\\tID:{sample}.{lane}\\tSM:{sample}\\tLB:{sample}\\t\
-          PU:{sample}.{lane}\\tPL:ILLUMINA\\tCN:CENTRE\""
-  sort_extra: ''
+units:
+    S1.L001: ["S1.L001.R1.fastq.gz"]
+    S2.L001: ["S2.L001.R1.fastq.gz"]
 
-samtools_merge:
-  extra: ''
-  threads: 10
+# Normals are used to correct for artefacts that remain after the
+# GC-content/mappability correction performed by QDNAseq.
 
-picard_mark_duplicates:
-  extra: >-
-    -XX:ParallelGCThreads=5
-    VALIDATION_STRINGENCY=LENIENT
+normals: ["S1"]
 
-multiqc:
-  extra: ''
+# Sample groups are used by RUBIC/GISTIC to perform recurrence analyses
+# on different subsets of samples.
 
-fastqc:
-  extra: ''
-
-qdnaseq:
-  genome: 'mm10'
-  organism: 'other'
-  bin_size: 50
-  read_length: 50
-  blacklists:
-    - 'custom.bed'
-
-qdnaseq_annotate:
-  gtf:  '/path/to/gtf'
-  extra: '--impute'
+groups:
+    group1: ["S1", "S2"]

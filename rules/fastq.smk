@@ -1,12 +1,27 @@
+def cutadapt_extra(wildcards):
+
+    extra = list(config["rules"]["cutadapt"]["extra"])
+
+    extra += ['--length {}'.format(
+        config["options"]["qdnaseq"]["read_length"])]
+
+    return " ".join(extra)
+
+
 rule cutadapt:
     input:
-        "fastq/raw/{sample}.{lane}.R1.fastq.gz"
+        "fastq/raw/{unit}.R1.fastq.gz"
     output:
-        fastq=temp("fastq/trimmed/{sample}.{lane}.R1.fastq.gz"),
-        qc="qc/cutadapt/{sample}.{lane}.txt"
+        fastq=temp("fastq/trimmed/{unit}.R1.fastq.gz"),
+        qc="qc/cutadapt/{unit}.txt"
     params:
-        config["cutadapt"]["extra"]
+        cutadapt_extra
+    #threads:
+    #    config["rules"]["cutadapt"]["threads"]
+    conda:
+        path.join(workflow.basedir, "envs", "cutadapt.yaml")
     log:
-        "logs/cutadapt/{sample}.{lane}.log"
+        "logs/cutadapt/{unit}.log"
     wrapper:
         "0.17.0/bio/cutadapt/se"
+    #    "file://" + path.join(workflow.basedir, "wrappers", "cutadapt", "se")

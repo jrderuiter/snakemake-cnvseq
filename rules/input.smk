@@ -4,26 +4,27 @@ from snakemake.remote.HTTP import RemoteProvider as HTTPRemoteProvider
 from snakemake.remote.FTP import RemoteProvider as FTPRemoteProvider
 
 
-input_config = config.get("input", {}) or {}
-
 HTTP = HTTPRemoteProvider()
-FTP = FTPRemoteProvider(**input_config.get("ftp", {}))
+FTP = FTPRemoteProvider(**config["input"].get("ftp", {}))
 
 
 def input_path(wildcards):
     """Extracts input path from sample overview."""
 
-    if wildcards.pair not in {"R1", "R2"}:
+    # Lookup file path for given unit/pair.
+    if wildcards.pair == "R1":
+        pair_index = 0
+    elif wildcards.pair == "R2":
+        pair_index = 1
+    else:
         raise ValueError("Unexpected value for pair wildcard ({})"
                          .format(wildcards.pair))
 
-    # Lookup file path.
-    key = (wildcards.sample, wildcards.lane)
-    fastq = "fastq1" if wildcards.pair == "R1" else "fastq2"
-    file_path = samples.set_index(["sample", "lane"]).loc[key, fastq]
+    file_path = config["units"][wildcards.unit][pair_index]
 
     # Prepend local directory if given.
-    input_dir = input_config.get("dir", None)
+    input_dir = config["input"].get("dir", None)
+
     if input_dir is not None:
         file_path = path.join(input_dir, file_path)
 
@@ -48,7 +49,7 @@ rule copy_input:
     input:
         input_path
     output:
-        temp("fastq/raw/{sample}.{lane}.{pair}.fastq.gz")
+        temp("fastq/raw/{unit}.{pair}.fastq.gz")
     resources:
         io=1
     shell:
